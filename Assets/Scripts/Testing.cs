@@ -15,6 +15,8 @@ public class Testing : MonoBehaviour
     public Material _material;
 
     private void Start() {
+        Time.timeScale = 100;
+
         EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         EntityArchetype entityArchetype = entityManager.CreateArchetype(
             typeof(MoveSpeedComponent),
@@ -22,7 +24,8 @@ public class Testing : MonoBehaviour
             typeof(RenderMesh),
             typeof(RenderBounds),
             typeof(LocalToWorld),
-            typeof(Scale)
+            typeof(Scale),
+            typeof(DataComponent)
             );
 
         NativeArray<Entity> entityArray = new NativeArray<Entity>(populationCount, Allocator.Temp);
@@ -31,6 +34,13 @@ public class Testing : MonoBehaviour
         //Initialize component data
         for (int i = 0; i < entityArray.Length; i++) {
             Entity entity = entityArray[i];
+
+            entityManager.SetComponentData(entity, new DataComponent
+            {
+                value = i,
+                sorted = false,
+                inPosition = false
+            });
 
             entityManager.SetComponentData(entity, new MoveSpeedComponent {
                 moveSpeedX = Random.Range(-4f, 4f),
@@ -60,6 +70,5 @@ public class Testing : MonoBehaviour
         //Set universal data
         UniversalData.populationCount = populationCount;
         UniversalData.crowdDensity = crowdDensity;
-
     }
 }
