@@ -3,72 +3,60 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Rendering;
+using Unity.Burst;
 using Unity.Transforms;
 using UnityEngine;
+using Unity.Mathematics;
 
 public class Testing : MonoBehaviour
 {
+    //adjustable params
     public int populationCount = 1000;
-    public float crowdDensity = 1f;
+    public GameObject selector;
+    public bool instantMode = false;
 
-    public Mesh _mesh;
-    public Material _material;
+    //params used by other components
+    public static GameObject[] objectArray;
+    public static int index = 0;
 
     private void Start() {
-        Time.timeScale = 100;
+        float border = Mathf.Sqrt(populationCount) / 2;
+        objectArray = new GameObject[populationCount];
 
-        EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-        EntityArchetype entityArchetype = entityManager.CreateArchetype(
-            typeof(MoveSpeedComponent),
-            typeof(Translation),
-            typeof(RenderMesh),
-            typeof(RenderBounds),
-            typeof(LocalToWorld),
-            typeof(Scale),
-            typeof(DataComponent)
-            );
+        for (int i = 0; i < populationCount; i++)
+        {
+            GameObject temp = Instantiate(selector, new Vector3(UnityEngine.Random.Range(-border, border), 0f, UnityEngine.Random.Range(-border, border)), Quaternion.identity) as GameObject;
+            temp.GetComponent<VarsComponent>().InPosition = false;
+            temp.GetComponent<VarsComponent>().Sorted = false;
+            
+            //set value
+            float red = UnityEngine.Random.Range(0f, 1f);
+            float green = UnityEngine.Random.Range(0f, 1f);
+            float blue = UnityEngine.Random.Range(0f, 1f);
 
-        NativeArray<Entity> entityArray = new NativeArray<Entity>(populationCount, Allocator.Temp);
-        entityManager.CreateEntity(entityArchetype, entityArray);
+            temp.GetComponent<VarsComponent>().Value = (red * 100f) + (green * 10f) + blue;
 
-        //Initialize component data
-        for (int i = 0; i < entityArray.Length; i++) {
-            Entity entity = entityArray[i];
-
-            entityManager.SetComponentData(entity, new DataComponent
-            {
-                value = i,
-                sorted = false,
-                inPosition = false
-            });
-
-            entityManager.SetComponentData(entity, new MoveSpeedComponent {
-                moveSpeedX = Random.Range(-4f, 4f),
-                moveSpeedZ = Random.Range(-4f, 4f)
-            });
-
-            entityManager.SetSharedComponentData(entity, new RenderMesh {
-                mesh = _mesh,
-                material = _material
-            });
-
-            entityManager.SetComponentData(entity, new Scale {
-                Value = Random.Range(1f, 2f)
-            });
-
-            //Initialize positions
-            float rowOffset = (Mathf.Sqrt(populationCount) / (2 * crowdDensity));
-            float x = ((i % Mathf.Sqrt(populationCount)) / crowdDensity) - rowOffset;
-            float z = (i / (Mathf.Sqrt(populationCount) * crowdDensity)) - rowOffset;
-            entityManager.SetComponentData(entity, new Translation {
-                Value = new Unity.Mathematics.float3(x, 0, z)
-            });
+            //set color to value
+            Renderer rend = temp.GetComponent<Renderer>();
+            rend.material.SetColor("_Color", new Color(red, green, blue, 1));
+            objectArray[i] = temp;
         }
-        entityArray.Dispose();
 
+        //copy array references
+        SortingSystem.objectArray = objectArray;
+        MovementSystem.objectArray = objectArray;
+    }
 
-        //Set universal data
-        UniversalData.populationCount = populationCount;
-        UniversalData.crowdDensity = crowdDensity;
+    private void Update()
+    {
+        if (instantMode && !MovementSystem.instantMode)
+        {
+            MovementSystem.instantMode = true;
+        }
+
+        else if (!instantMode && MovementSystem.instantMode)
+        {
+            MovementSystem.instantMode = false;
+        }
     }
 }

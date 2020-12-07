@@ -8,4 +8,5 @@ public struct DataComponent : IComponentData
     public float value;
     public bool sorted;
     public bool inPosition;
+    public Vector3 sortPos;
 }

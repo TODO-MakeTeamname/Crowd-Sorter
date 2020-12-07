@@ -7,27 +7,28 @@ using Unity.Transforms;
 using Unity.Collections;
 using Unity.Burst;
 
-public class SortingSystem : ComponentSystem {
-    int index = 0;
-    protected override void OnUpdate()
+
+public class SortingSystem : MonoBehaviour {
+
+    public static GameObject[] objectArray;
+
+    protected void Update()
     {
-        float dt = Time.DeltaTime;
-        Entities.ForEach((ref DataComponent dataComponent, ref MoveSpeedComponent moveSpeedComponent) =>
-        { 
-            //check if at correct index and has not already been sorted
-            if ((float)index == dataComponent.value && !dataComponent.sorted)
-            {
-                dataComponent.sorted = true;
-                Debug.Log("person at index " + index + " is being sorted");
-            }
-            //move on when in position
-            else if ((float)index == dataComponent.value && dataComponent.inPosition)
-            {
-                index++;
-            }
+        GameObject temp = objectArray[Testing.index];
+        VarsComponent varsComp = temp.GetComponent<VarsComponent>();
+        if (!varsComp.Sorted)
+        {
+            Debug.Log("Person number " + Testing.index + " is being sorted");
+            varsComp.Sorted = true;
 
-        });
-        
-
+            varsComp.SortPos = new Vector3((float)(Testing.index % 320) - 160f, 0f, (float)((Testing.index / 320) % 320) - 160f);
+        }
+        else if (varsComp.InPosition)
+        {
+            if (Testing.index < Testing.objectArray.Length - 1)
+            {
+                Testing.index++;
+            }
+        }
     }
 }
