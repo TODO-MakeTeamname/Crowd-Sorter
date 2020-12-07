@@ -25,7 +25,7 @@ public class Testing : MonoBehaviour
             typeof(RenderBounds),
             typeof(LocalToWorld),
             typeof(Scale),
-            typeof(DataComponent)
+            typeof(SortableComponent)
             );
 
         NativeArray<Entity> entityArray = new NativeArray<Entity>(populationCount, Allocator.Temp);
@@ -35,7 +35,7 @@ public class Testing : MonoBehaviour
         for (int i = 0; i < entityArray.Length; i++) {
             Entity entity = entityArray[i];
 
-            entityManager.SetComponentData(entity, new DataComponent
+            entityManager.SetComponentData(entity, new SortableComponent
             {
                 value = i,
                 sorted = false,
