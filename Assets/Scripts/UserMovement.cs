@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class UserMovement : MonoBehaviour
 {
+    private bool bUsingMouse = true;
+
     //Translation
     [SerializeField] float defaultSpeed = 1f;
     [SerializeField] float sprintMultiplier = 5f;
@@ -28,8 +30,14 @@ public class UserMovement : MonoBehaviour
     }
 
     private void Update() {
+        //Toggle camera/mouse
+        if (Input.GetKeyDown(KeyCode.Space))
+            bUsingMouse = !bUsingMouse;
+
         Translate();
-        Rotate();
+
+        if (!bUsingMouse)
+            Rotate();
     }
 
     private void Translate() {
