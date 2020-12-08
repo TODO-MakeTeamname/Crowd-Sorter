@@ -8,9 +8,11 @@ public class CrowdController : MonoBehaviour {
     public int population = 1000;
     public float crowdDensity = 1f;
 
-    // i and j for manual bubble sort for loops
-    private int i = 0;
-    private int j = 0;
+    public bool useBubbleSort = true;
+
+    // i and j for manual bubble sort/insertion sort for loops
+    private int i;
+    private int j;
 
     public List<PersonController> people;
 
@@ -18,6 +20,13 @@ public class CrowdController : MonoBehaviour {
 
     public void Start() {
         SpawnPeople(population);
+        if (useBubbleSort) {
+            i = 0;
+            j = 0;
+        } else {
+            i = 0;
+            j = i + 1;
+        }
     }
 
     public void SpawnPeople(int population) {
@@ -42,25 +51,22 @@ public class CrowdController : MonoBehaviour {
 
             people.Add(controller);
         }
-        Debug.Log("");
     }
 
     public void FixedUpdate() {
-        bubbleSort();
+        if (useBubbleSort) {
+            BubbleSort();
+        } else {
+            SelectionSort();
+        }
+
     }
 
-    private void bubbleSort() {
+    private void BubbleSort() {
         if (i < people.Count) {
             if (j < people.Count - 1) {
                 if (people[j].value > people[j + 1].value) {
-                    // swap in list
-                    var personTemp = people[j];
-                    people[j] = people[j + 1];
-                    people[j + 1] = personTemp;
-                    // swap in game
-                    var positionTemp = people[j].transform.position;
-                    people[j].transform.position = people[j + 1].transform.position;
-                    people[j + 1].transform.position = positionTemp;
+                    swap(j,j+1);
                 }
                 j++;
             } else {
@@ -69,4 +75,36 @@ public class CrowdController : MonoBehaviour {
             }
         }
     }
+
+
+    private int minIndex = 0; // min index for selection sort
+
+    private void SelectionSort() {
+        Debug.Log($"i: {i} j: {j}");
+        if (i < people.Count - 1) {
+            if (j < people.Count) {
+                if (people[j].value < people[minIndex].value) {
+                    minIndex = j;
+                }
+                j++;
+            } else {
+                swap(i, minIndex);
+                i++;
+                minIndex = i;
+                j = i + 1;
+            }
+        } 
+    }
+
+    private void swap(int i, int j) {
+        // swap in list
+        var personTemp = people[j];
+        people[j] = people[i];
+        people[i] = personTemp;
+        // swap in game
+        var positionTemp = people[j].transform.position;
+        people[j].transform.position = people[i].transform.position;
+        people[i].transform.position = positionTemp;
+    }
+
 }
